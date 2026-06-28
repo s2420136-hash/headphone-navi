@@ -3,20 +3,18 @@ import pandas as pd
 
 # 1. 商品データの定義（新田さんのCSVデータを基に作成）
 products = [
-    {"name": "Marshall MAJOR V", "price": 8, "review": 8, "use": 9, "sound": 9, "comfort": 10, "usage": "音楽鑑賞・映画", "genre": "ロック・クラシック", "reason": "1万円以下で購入でき、軽量で長時間利用できるため初めてでも使いやすい"},
-    {"name": "Sony WH-CH520", "price": 10, "review": 4, "use": 9, "sound": 7, "comfort": 10, "usage": "通学・勉強", "genre": "J-pop", "reason": "操作が簡単で装着感も良く、ヘッドホンデビュー向け"},
-    {"name": "audio-technica ATH-S220BT", "price": 10, "review": 4, "use": 9, "sound": 7, "comfort": 10, "usage": "通学・勉強", "genre": "J-pop・アニソン", "reason": "価格はやや高めだが音質とバッテリー性能が高く、長く使いたい初心者向け"},
-    {"name": "Sony WH-CH720N", "price": 8, "review": 4, "use": 9, "sound": 8, "comfort": 10, "usage": "通学・勉強・作業", "genre": "なんでも", "reason": "ノイキャン搭載で移動中や作業中も快適。軽量で初心者でも使いやすい"},
-    {"name": "Sony ULT WEAR (WH-ULT900N)", "price": 2, "review": 8, "use": 8, "sound": 10, "comfort": 8, "usage": "音楽鑑賞・通学", "genre": "ロック・EDM", "reason": "重低音とノイズキャンセリングが特徴。音楽を迫力ある音で楽しみたい初心者向け。"},
-    {"name": "Audio-Technica ATH-M20xBT", "price": 8, "review": 4, "use": 9, "sound": 9, "comfort": 10, "usage": "通学・音楽鑑賞", "genre": "なんでも", "reason": "長時間装着しても疲れにくく、有線・無線の両方に対応。音質評価も高く、初めての本格派ヘッドホンとして選びやすい。"},
-    {"name": "Audio-Technica ATH-HL7BT", "price": 8, "review": 4, "use": 8, "sound": 9, "comfort": 10, "usage": "映画鑑賞・勉強・自宅音楽鑑賞", "genre": "空間オーディオ", "reason": "非常に軽く長時間でも疲れにくい。映画や動画視聴、自宅での音楽鑑賞を快適に楽しみたい初心者向け。"},
-    {"name": "Marshall MONITOR III A.N.C.", "price": 2, "review": 4, "use": 10, "sound": 10, "comfort": 7, "usage": "音楽鑑賞・通学・映画鑑賞", "genre": "ロック・バンド", "reason": "高性能ノイズキャンセリングと高音質を備えた上級モデル。価格は高いが、音楽や映画を本格的に楽しみたい初心者向け。"}
+    {"name": "Marshall MAJOR V", "actual_price": 19980, "price": 8, "review": 8, "use": 9, "sound": 9, "comfort": 10, "usage": "音楽鑑賞・映画", "genre": "ロック・クラシック", "reason": "軽量で長時間利用しやすく、操作もわかりやすいため初心者に向いている"},
+    {"name": "Sony WH-CH520", "actual_price": 7700, "price": 10, "review": 4, "use": 9, "sound": 7, "comfort": 10, "usage": "通学・勉強", "genre": "J-pop", "reason": "操作が簡単で装着感も良く、ヘッドホンデビュー向け"},
+    {"name": "audio-technica ATH-S220BT", "actual_price": 6490, "price": 10, "review": 4, "use": 9, "sound": 7, "comfort": 10, "usage": "通学・勉強", "genre": "J-pop・アニソン", "reason": "価格はやや高めだが音質とバッテリー性能が高く、長く使いたい初心者向け"},
+    {"name": "Sony WH-CH720N", "actual_price": 18810, "price": 8, "review": 4, "use": 9, "sound": 8, "comfort": 10, "usage": "通学・勉強・作業", "genre": "なんでも", "reason": "ノイキャン搭載で移動中や作業中も快適。軽量で初心者でも使いやすい"},
+    {"name": "Sony ULT WEAR (WH-ULT900N)", "actual_price": 33000, "price": 2, "review": 8, "use": 8, "sound": 10, "comfort": 8, "usage": "音楽鑑賞・通学", "genre": "ロック・EDM", "reason": "重低音とノイズキャンセリングが特徴。音楽を迫力ある音で楽しみたい初心者向け。"}
 ]
 
 # アプリのタイトル
 st.title("🎧 ヘッドフォンナビ")
 st.subheader("〜レビュー翻訳で失敗しない選び方〜")
 st.write("いくつかの質問に答えるだけで、あなたにピッタリの「失敗しないヘッドフォン」を提案します！")
+st.caption("※価格は目安です。販売店や時期によって変わる場合があります。")
 
 st.divider()
 
@@ -109,13 +107,23 @@ st.divider()
 # --- 推薦ロジックの計算パート ---
 if st.button("✨ 診断結果を見る"):
     st.header("🏆 あなたにおすすめのヘッドフォン TOP3")
-    
+    st.caption(
+    "失敗しにくさ適合度は、価格・用途・音の好み・装着感・"
+    "レビューの条件が、あなたの回答にどれくらい合っているかを表す診断スコアです。"
+    "商品の性能や品質を直接評価した点数ではありません。"
+    )
     # 各商品の適合度スコアを計算
     scored_products = []
     for p in products:
         # 適合度 = (商品スコア * ユーザーの重み) の総和
         score = (p["price"] * w_price) + (p["review"] * w_review) + (p["use"] * w_use) + (p["sound"] * w_sound) + (p["comfort"] * w_comfort)
         
+        if q8 == "1万円以下がいい" and p["actual_price"] > 10000:
+            continue
+
+        if q8 == "1〜2万円くらい" and p["actual_price"] > 20000:
+            continue
+
         # 画面表示用にデータをコピー
         p_score = p.copy()
         p_score["match_score"] = score
@@ -127,12 +135,26 @@ if st.button("✨ 診断結果を見る"):
     # 結果の表示
     for rank, item in enumerate(top_3, 1):
         st.subheader(f"第{rank}位: {item['name']}")
-        col1, col2 = st.columns(2)
-        with col1:
+        match_reasons = []
+
+    if q8 == "1万円以下がいい" and item["actual_price"] <= 10000:
+        match_reasons.append("希望する予算内")
+
+    if q6 == "3時間以上" and item["comfort"] >= 8:
+        match_reasons.append("長時間でも使いやすい")
+
+    if q5 == "よくある" and item["use"] >= 8:
+        match_reasons.append("外出や通学に向いている")
+
+    if match_reasons:
+        st.success("あなたに合うポイント：" + "・".join(match_reasons))
+    col1, col2 = st.columns(2)
+    with col1:
+            st.write(f"**価格目安:** {item['actual_price']:,}円")
             st.write(f"**主な用途:** {item['usage']}")
             st.write(f"**得意なジャンル:** {item['genre']}")
-        with col2:
+    with col2:
             st.write(f"**失敗しにくさ適合度:** {item['match_score']} 点")
         
-        st.info(f"💡 **初心者へのおすすめ理由:**\n{item['reason']}")
-        st.divider()
+    st.info(f"💡 **初心者へのおすすめ理由:**\n{item['reason']}")
+    st.divider()

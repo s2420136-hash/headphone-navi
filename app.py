@@ -121,7 +121,7 @@ if st.button("✨ 診断結果を見る"):
         if q8 == "1万円以下がいい" and p["actual_price"] > 10000:
             continue
 
-        if q8 == "1〜2万円くらい" and p["actual_price"] > 20000:
+        if q8 == "1〜2万円くらい" and not (10000 <= p["actual_price"] <= 20000):
             continue
 
         # 画面表示用にデータをコピー

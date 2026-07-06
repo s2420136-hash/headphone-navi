@@ -1,160 +1,356 @@
-import streamlit as st
-import pandas as pd
+from pathlib import Path
 
-# 1. 商品データの定義（新田さんのCSVデータを基に作成）
+import pandas as pd
+import streamlit as st
+
+
 products = [
-    {"name": "Marshall MAJOR V", "actual_price": 19980, "price": 8, "review": 8, "use": 9, "sound": 9, "comfort": 10, "usage": "音楽鑑賞・映画", "genre": "ロック・クラシック", "reason": "軽量で長時間利用しやすく、操作もわかりやすいため初心者に向いている"},
-    {"name": "Sony WH-CH520", "actual_price": 7700, "price": 10, "review": 4, "use": 9, "sound": 7, "comfort": 10, "usage": "通学・勉強", "genre": "J-pop", "reason": "操作が簡単で装着感も良く、ヘッドホンデビュー向け"},
-    {"name": "audio-technica ATH-S220BT", "actual_price": 6490, "price": 10, "review": 4, "use": 9, "sound": 7, "comfort": 10, "usage": "通学・勉強", "genre": "J-pop・アニソン", "reason": "価格はやや高めだが音質とバッテリー性能が高く、長く使いたい初心者向け"},
-    {"name": "Sony WH-CH720N", "actual_price": 18810, "price": 8, "review": 4, "use": 9, "sound": 8, "comfort": 10, "usage": "通学・勉強・作業", "genre": "なんでも", "reason": "ノイキャン搭載で移動中や作業中も快適。軽量で初心者でも使いやすい"},
-    {"name": "Sony ULT WEAR (WH-ULT900N)", "actual_price": 33000, "price": 2, "review": 8, "use": 8, "sound": 10, "comfort": 8, "usage": "音楽鑑賞・通学", "genre": "ロック・EDM", "reason": "重低音とノイズキャンセリングが特徴。音楽を迫力ある音で楽しみたい初心者向け。"}
+    {
+        "name": "Marshall MAJOR V",
+        "actual_price": 19980,
+        "price": 8,
+        "review": 8,
+        "use": 9,
+        "sound": 9,
+        "comfort": 8,
+        "ease": 8,
+        "usage": "音楽鑑賞・通勤・通学",
+        "usage_tags": ["通勤・通学", "音楽鑑賞"],
+        "genre": "ロック・バンド",
+        "genre_tags": ["ロック・バンド"],
+        "sound_profiles": ["迫力がある・重低音が強い"],
+        "noise_canceling": False,
+        "wired": True,
+        "reason": "長時間使えるバッテリーと折りたたみやすいデザインが特徴です。",
+        "image": "image/imgrc0107048115.webp",
+        "best_for": "デザインとバッテリー性能を重視する人",
+        "review_good": "バッテリーが長持ちし、持ち運びやすい点が魅力です。",
+        "review_bad": "ノイズキャンセリングを重視する人には向いていません。",
+        "review_translation": "充電の手間を減らしたい人向けですが、電車内の騒音対策を重視する場合は注意が必要です。",
+        "review_source": "Marshall公式製品情報を初心者向けに要約",
+    },
+    {
+        "name": "Sony WH-CH520",
+        "actual_price": 7700,
+        "price": 10,
+        "review": 4,
+        "use": 9,
+        "sound": 7,
+        "comfort": 9,
+        "ease": 9,
+        "usage": "通勤・通学・勉強",
+        "usage_tags": ["通勤・通学", "勉強・作業"],
+        "genre": "J-POP・アニソン",
+        "genre_tags": ["J-POP・アニソン・女性ボーカル"],
+        "sound_profiles": ["ボーカルがはっきり聞こえる", "バランスよく自然"],
+        "noise_canceling": False,
+        "wired": False,
+        "reason": "価格を抑えながら、基本的な機能を使いやすくまとめたモデルです。",
+        "image": "image/01_43b793100.jpg",
+        "best_for": "初めてのワイヤレスヘッドフォンを低価格で試したい人",
+        "review_good": "軽く、ボタン操作が分かりやすく、バッテリーも長持ちします。",
+        "review_bad": "ノイズキャンセリング機能は搭載されていません。",
+        "review_translation": "操作の簡単さを重視する初心者向けですが、騒がしい場所での使用には注意が必要です。",
+        "review_source": "Sony公式製品情報を初心者向けに要約",
+    },
+    {
+        "name": "audio-technica ATH-S220BT",
+        "actual_price": 6490,
+        "price": 10,
+        "review": 4,
+        "use": 9,
+        "sound": 7,
+        "comfort": 9,
+        "ease": 8,
+        "usage": "通勤・通学・勉強・オンライン授業",
+        "usage_tags": ["通勤・通学", "勉強・作業", "ゲーム"],
+        "genre": "J-POP・アニソン",
+        "genre_tags": ["J-POP・アニソン・女性ボーカル"],
+        "sound_profiles": ["ボーカルがはっきり聞こえる", "バランスよく自然"],
+        "noise_canceling": False,
+        "wired": True,
+        "reason": "軽量で、有線とワイヤレスの両方に対応しています。",
+        "image": "image/branch_3114_image_27.jpg",
+        "best_for": "低価格とバッテリー性能、有線接続を重視する人",
+        "review_good": "軽量で、最大約60時間使える点が魅力です。",
+        "review_bad": "ノイズキャンセリング機能はなく、対応コーデックはSBCです。",
+        "review_translation": "勉強やオンライン授業には使いやすい一方、高機能な騒音対策を求める人には物足りない場合があります。",
+        "review_source": "audio-technica公式製品情報を初心者向けに要約",
+    },
+    {
+        "name": "Sony WH-CH720N",
+        "actual_price": 18810,
+        "price": 8,
+        "review": 4,
+        "use": 9,
+        "sound": 8,
+        "comfort": 10,
+        "ease": 8,
+        "usage": "通勤・通学・勉強・作業",
+        "usage_tags": ["通勤・通学", "勉強・作業", "映画・動画", "音楽鑑賞"],
+        "genre": "幅広いジャンル",
+        "genre_tags": [
+            "J-POP・アニソン・女性ボーカル",
+            "ロック・バンド",
+            "クラシック・映画音楽",
+        ],
+        "sound_profiles": ["ボーカルがはっきり聞こえる", "バランスよく自然"],
+        "noise_canceling": True,
+        "wired": True,
+        "reason": "軽量で、ノイズキャンセリングにも対応しています。",
+        "image": "image/WH-CH720N.jpg",
+        "best_for": "電車や集中したい場所で長時間使いたい人",
+        "review_good": "軽さとノイズキャンセリングを両立し、長時間使いやすいモデルです。",
+        "review_bad": "1万円以下の商品と比べると価格が高くなります。",
+        "review_translation": "価格よりも、騒音対策と装着感を重視する初心者に向いています。",
+        "review_source": "Sony公式製品情報を初心者向けに要約",
+    },
+    {
+        "name": "Sony ULT WEAR (WH-ULT900N)",
+        "actual_price": 33000,
+        "price": 2,
+        "review": 8,
+        "use": 8,
+        "sound": 10,
+        "comfort": 8,
+        "ease": 7,
+        "usage": "音楽鑑賞・通勤・通学",
+        "usage_tags": ["通勤・通学", "音楽鑑賞", "映画・動画"],
+        "genre": "ロック・HIPHOP・EDM",
+        "genre_tags": ["ロック・バンド", "HIPHOP・EDM"],
+        "sound_profiles": ["迫力がある・重低音が強い"],
+        "noise_canceling": True,
+        "wired": True,
+        "reason": "迫力のある重低音とノイズキャンセリングが特徴です。",
+        "image": "image/alljapan-online-shop_4548736156425.jpg",
+        "best_for": "重低音と迫力を最優先したい人",
+        "review_good": "重低音の迫力があり、ノイズキャンセリングにも対応しています。",
+        "review_bad": "自然で控えめな低音を好む人には、低音が強すぎる可能性があります。",
+        "review_translation": "ライブのような迫力を楽しみたい人向けですが、音のバランスを重視する場合は試聴がおすすめです。",
+        "review_source": "Sony公式製品情報を初心者向けに要約",
+    },
 ]
 
-# アプリのタイトル
-st.title("🎧 ヘッドフォンナビ")
-st.subheader("〜レビュー翻訳で失敗しない選び方〜")
-st.write("いくつかの質問に答えるだけで、あなたにピッタリの「失敗しないヘッドフォン」を提案します！")
-st.caption("※価格は目安です。販売店や時期によって変わる場合があります。")
 
+st.title("🎧 ヘッドフォンナビ")
+st.subheader("レビュー・製品情報を初心者向けに翻訳")
+st.write("いくつかの質問から、あなたに合うヘッドフォン選びをサポートします。")
+st.caption("※価格は目安です。販売店や時期によって変わる場合があります。")
 st.divider()
 
-# ユーザーの重視度（重み）の初期化
-w_use = 0
-w_comfort = 0
-w_price = 0
-w_sound = 0
-w_review = 0
-
-# --- 質問パート（新田さんの設計を再現） ---
 st.header("📋 診断質問")
 
-q1 = st.selectbox("Q1. 主にどんな場面で使いますか？", ["通学・電車", "勉強・作業", "ゲーム", "映画・動画鑑賞", "音楽をじっくり楽しみたい"])
-if q1 == "通学・電車":
-    w_use += 10
-    w_comfort += 5
-    w_review += 5
-elif q1 == "勉強・作業":
-    w_comfort += 10
-    w_use += 5
-elif q1 == "ゲーム":
-    w_use += 10
-    w_sound += 5
-elif q1 == "映画・動画鑑賞":
-    w_sound += 10
-    w_comfort += 5
-elif q1 == "音楽をじっくり楽しみたい":
-    w_sound += 15
+q1 = st.multiselect(
+    "Q1. どのような場面で使いますか？（複数選択可）",
+    ["通勤・通学", "勉強・作業", "音楽鑑賞", "映画・動画", "ゲーム", "ランニング・ウォーキング"],
+)
 
-q2 = st.selectbox("Q2. いちばん不安なのはどれですか？", ["高すぎて失敗すること", "音が思っていたのと違うこと", "長時間つけて疲れること", "接続がうまくいかないこと"])
-if q2 == "高すぎて失敗すること": w_price += 10
-elif q2 == "音が思っていたのと違うこと": w_sound += 10
-elif q2 == "長時間つけて疲れること": w_comfort += 10
-elif q2 == "接続がうまくいかないこと": w_review += 10
+q2 = st.selectbox(
+    "Q2. いちばん不安なことは何ですか？",
+    ["予算を超えてしまうこと", "音が好みと違うこと", "長時間つけて疲れること", "接続や操作が難しいこと"],
+)
 
-q3 = st.multiselect("Q3. よく聴く音楽は？（複数選択可）", ["J-POP・アニソン・女性ボーカル", "ロック・バンド", "HIPHOP・EDM", "クラシック・映画音楽", "特に決まっていない"])
-if "J-POP・アニソン・女性ボーカル" in q3:
-    w_sound += 5
-    w_review += 3
+q3 = st.multiselect(
+    "Q3. よく聴く音楽は？（複数選択可）",
+    ["J-POP・アニソン・女性ボーカル", "ロック・バンド", "HIPHOP・EDM", "クラシック・映画音楽", "特に決まっていない"],
+)
 
-if "ロック・バンド" in q3:
-    w_sound += 8
+q4 = st.radio(
+    "Q4. 好みの音に近いものは？",
+    ["迫力がある・重低音が強い", "ボーカルがはっきり聞こえる", "バランスよく自然", "よくわからない"],
+)
 
-if "HIPHOP・EDM" in q3:
-    w_sound += 10
+q5 = st.radio(
+    "Q5. 電車や屋外で使う予定はありますか？",
+    ["よくある", "ときどきある", "ほとんどない"],
+)
 
-if "クラシック・映画音楽" in q3:
-    w_sound += 8
-    w_comfort += 3
+q6 = st.radio(
+    "Q6. 1回の使用時間はどれくらいですか？",
+    ["30分以内", "1〜2時間", "3時間以上"],
+)
 
-if "特に決まっていない" in q3:
-    w_review += 5
+q7 = st.radio(
+    "Q7. ゲームや動画で音と映像のずれは気になりますか？",
+    ["とても気になる", "少し気になる", "あまり気にならない", "全く気にならない"],
+)
 
-q4 = st.radio("Q4. 音のイメージはどちらが好みですか？", ["迫力がある・重低音が強い", "ボーカルがはっきり聞こえる", "バランスよく自然", "よくわからない"])
-if q4 == "迫力がある・重低音が強い":
-    w_sound += 10
-elif q4 == "ボーカルがはっきり聞こえる":
-    w_sound += 8
-    w_review += 3
-elif q4 == "バランスよく自然":
-    w_sound += 7
-    w_review += 5
-elif q4 == "よくわからない":
-    w_review += 5
+q8 = st.radio(
+    "Q8. 価格の目安は？",
+    ["1万円以下がいい", "1〜2万円くらい", "2万円以上でもOK"],
+)
 
-q5 = st.radio("Q5. 電車や外で使う予定はありますか？", ["よくある", "ときどきある", "ほとんどない"])
-if q5 == "よくある": w_use += 5
-
-q6 = st.radio("Q6. 1回の使用時間はどれくらい？", ["30分以内", "1〜2時間", "3時間以上"])
-if q6 == "3時間以上": w_comfort += 10
-elif q6 == "1〜2時間": w_comfort += 5
-
-q7 = st.radio("Q7. ゲームや動画で「音と映像のズレ」は気になりますか？", ["とても気になる", "少し気になる", "あまり気にしない"])
-if q7 == "とても気になる": w_use += 5
-
-q8 = st.radio("Q8. 価格の目安は？", ["1万円以下がいい", "1〜2万円くらい", "2万円以上でもOK"])
-if q8 == "1万円以下がいい": w_price += 15
-elif q8 == "1〜2万円くらい": w_price += 8
-
-q9 = st.radio("Q9. 見た目はどのくらい重視しますか？", ["とても重視する", "ある程度重視する", "あまり気にしない"])
-# 見た目は直接スコアにないため、こだわり度として全体に少し影響させるか、今回はMarshall等の特定ブランドに裏で加点するロジックも組めます（今回はシンプルに維持）
-
-q10 = st.radio("Q10. 初めて買うので、どれが安心ですか？", ["レビューが多く評価が安定しているもの", "有名ブランド", "とにかくコスパが良いもの", "わかりやすく説明されているもの"])
-if q10 == "レビューが多く評価が安定しているもの": w_review += 10
-elif q10 == "とにかくコスパが良いもの": w_price += 5
+q9 = st.radio(
+    "Q9. 初めて買う際、特に重視するものは？",
+    ["レビュー評価", "価格の安さ", "装着感", "操作の分かりやすさ"],
+)
 
 st.divider()
 
-# --- 推薦ロジックの計算パート ---
-if st.button("✨ 診断結果を見る"):
-    st.header("🏆 あなたにおすすめのヘッドフォン TOP3")
-    st.caption(
-    "失敗しにくさ適合度は、価格・用途・音の好み・装着感・"
-    "レビューの条件が、あなたの回答にどれくらい合っているかを表す診断スコアです。"
-    "商品の性能や品質を直接評価した点数ではありません。"
-    )
-    # 各商品の適合度スコアを計算
+if st.button("✨ 診断結果を見る", type="primary"):
+    weights = {
+        "price": 5,
+        "review": 5,
+        "use": 5,
+        "sound": 5,
+        "comfort": 5,
+        "ease": 5,
+    }
+
+    concern_weights = {
+        "予算を超えてしまうこと": "price",
+        "音が好みと違うこと": "sound",
+        "長時間つけて疲れること": "comfort",
+        "接続や操作が難しいこと": "ease",
+    }
+    weights[concern_weights[q2]] += 10
+
+    if q5 == "よくある":
+        weights["use"] += 5
+    if q6 == "1〜2時間":
+        weights["comfort"] += 5
+    elif q6 == "3時間以上":
+        weights["comfort"] += 10
+    if q8 == "1万円以下がいい":
+        weights["price"] += 15
+    elif q8 == "1〜2万円くらい":
+        weights["price"] += 8
+    priority_weights = {
+        "レビュー評価": "review",
+        "価格の安さ": "price",
+        "装着感": "comfort",
+        "操作の分かりやすさ": "ease",
+    }
+    weights[priority_weights[q9]] += 10
+
     scored_products = []
-    for p in products:
-        # 適合度 = (商品スコア * ユーザーの重み) の総和
-        score = (p["price"] * w_price) + (p["review"] * w_review) + (p["use"] * w_use) + (p["sound"] * w_sound) + (p["comfort"] * w_comfort)
-        
-        if q8 == "1万円以下がいい" and p["actual_price"] > 10000:
+    selected_genres = [genre for genre in q3 if genre != "特に決まっていない"]
+
+    for product in products:
+        if q8 == "1万円以下がいい" and product["actual_price"] > 10000:
+            continue
+        if q8 == "1〜2万円くらい" and not 10000 <= product["actual_price"] <= 20000:
             continue
 
-        if q8 == "1〜2万円くらい" and not (10000 <= p["actual_price"] <= 20000):
-            continue
+        base_score = sum(product[key] * weight for key, weight in weights.items())
+        max_score = 10 * sum(weights.values())
 
-        # 画面表示用にデータをコピー
-        p_score = p.copy()
-        p_score["match_score"] = score
-        scored_products.append(p_score)
-    
-    # スコアが高い順にソートしてTOP3を抽出
-    top_3 = sorted(scored_products, key=lambda x: x["match_score"], reverse=True)[:3]
-    
-    # 結果の表示
-    for rank, item in enumerate(top_3, 1):
-        st.subheader(f"第{rank}位: {item['name']}")
-        match_reasons = []
+        usage_bonus = 0
+        if q1:
+            usage_matches = len(set(q1) & set(product["usage_tags"]))
+            usage_bonus = 20 * usage_matches / len(q1)
+            max_score += 20
 
-    if q8 == "1万円以下がいい" and item["actual_price"] <= 10000:
-        match_reasons.append("希望する予算内")
+        genre_bonus = 0
+        if selected_genres:
+            genre_matches = len(set(selected_genres) & set(product["genre_tags"]))
+            genre_bonus = 15 * genre_matches / len(selected_genres)
+            max_score += 15
 
-    if q6 == "3時間以上" and item["comfort"] >= 8:
-        match_reasons.append("長時間でも使いやすい")
+        sound_bonus = 0
+        if q4 != "よくわからない":
+            sound_bonus = 10 if q4 in product["sound_profiles"] else 2
+            max_score += 10
 
-    if q5 == "よくある" and item["use"] >= 8:
-        match_reasons.append("外出や通学に向いている")
+        outdoor_bonus = 0
+        if q5 == "よくある":
+            outdoor_bonus = 10 if product["noise_canceling"] else 3
+            max_score += 10
+        elif q5 == "ときどきある":
+            outdoor_bonus = 5 if product["noise_canceling"] else 2
+            max_score += 5
 
-    if match_reasons:
-        st.success("あなたに合うポイント：" + "・".join(match_reasons))
-    col1, col2 = st.columns(2)
-    with col1:
-            st.write(f"**価格目安:** {item['actual_price']:,}円")
-            st.write(f"**主な用途:** {item['usage']}")
-            st.write(f"**得意なジャンル:** {item['genre']}")
-    with col2:
-            st.write(f"**失敗しにくさ適合度:** {item['match_score']} 点")
-        
-    st.info(f"💡 **初心者へのおすすめ理由:**\n{item['reason']}")
-    st.divider()
+        latency_bonus = 0
+        if q7 == "とても気になる":
+            latency_bonus = 5 if product["wired"] else 0
+            max_score += 5
+        elif q7 == "少し気になる":
+            latency_bonus = 3 if product["wired"] else 0
+            max_score += 3
+
+        raw_score = base_score + usage_bonus + genre_bonus + sound_bonus + outdoor_bonus + latency_bonus
+        match_score = round(raw_score / max_score * 100)
+
+        scored_product = product.copy()
+        scored_product["match_score"] = min(match_score, 100)
+        scored_products.append(scored_product)
+
+    top_products = sorted(
+        scored_products,
+        key=lambda item: item["match_score"],
+        reverse=True,
+    )[:3]
+
+    result_count = len(top_products)
+
+    if result_count == 0:
+        st.warning("選択した価格帯に該当する商品がありません。")
+    else:
+        st.header(f"🏆 あなたへのおすすめ TOP{result_count}")
+        st.caption(
+            "適合度は、予算・用途・装着感・音の好みなどと商品の特徴との一致度です。"
+            "商品の品質そのものを評価した点数ではありません。"
+        )
+
+        if result_count < 3:
+            st.info(
+                f"選択した価格帯で紹介できる商品は{result_count}件です。"
+                "予算外の商品は表示していません。"
+            )
+
+        comparison_rows = []
+
+        for rank, item in enumerate(top_products, 1):
+            with st.container(border=True):
+                st.subheader(f"第{rank}位　{item['name']}")
+                image_col, detail_col = st.columns([1, 2])
+
+                with image_col:
+                    image_path = Path(item["image"])
+                    if image_path.exists():
+                        st.image(str(image_path), use_container_width=True)
+                    else:
+                        st.caption("商品画像を準備中です。")
+
+                with detail_col:
+                    st.write(f"**価格目安：** {item['actual_price']:,}円")
+                    st.write(f"**適合度：** {item['match_score']}／100点")
+                    st.write(f"**向いている人：** {item['best_for']}")
+
+                match_reasons = []
+                if q8 == "1万円以下がいい" and item["actual_price"] <= 10000:
+                    match_reasons.append("希望する予算内")
+                if q6 == "3時間以上" and item["comfort"] >= 8:
+                    match_reasons.append("長時間利用に向いている")
+                if set(q1) & set(item["usage_tags"]):
+                    match_reasons.append("希望する利用場面と一致")
+                if q5 == "よくある" and item["noise_canceling"]:
+                    match_reasons.append("屋外で使いやすいノイズキャンセリング対応")
+
+                if match_reasons:
+                    st.success("あなたに合う理由：" + "・".join(match_reasons))
+
+                st.info(f"**推薦理由：** {item['reason']}")
+                st.markdown("#### 製品情報を初心者向けに翻訳")
+                st.write(f"**良かった点：** {item['review_good']}")
+                st.write(f"**気になる点：** {item['review_bad']}")
+                st.write(f"**つまり：** {item['review_translation']}")
+                st.caption(item["review_source"])
+
+            comparison_rows.append(
+                {
+                    "順位": rank,
+                    "商品名": item["name"],
+                    "価格": f"{item['actual_price']:,}円",
+                    "適合度": f"{item['match_score']}／100",
+                    "向いている人": item["best_for"],
+                    "気になる点": item["review_bad"],
+                }
+            )
+
+        st.subheader("商品の比較")
+        st.dataframe(
+            pd.DataFrame(comparison_rows),
+            hide_index=True,
+            use_container_width=True,
+        )

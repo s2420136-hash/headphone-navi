@@ -329,12 +329,28 @@ if st.button("✨ 診断結果を見る", type="primary"):
             latency_bonus = 3 if product["wired"] else 0
             max_score += 3
 
-        raw_score = base_score + usage_bonus + genre_bonus + sound_bonus + outdoor_bonus + latency_bonus
+        price_range_bonus = 0
+        if q7 == "2万円以上でもOK":
+            max_score += 10
+            if product["actual_price"] >= 20000:
+                price_range_bonus = 10
+
+        raw_score = (
+            base_score
+            + usage_bonus
+            + genre_bonus
+            + sound_bonus
+            + outdoor_bonus
+            + latency_bonus
+            + price_range_bonus
+        )
+
         match_score = round(raw_score / max_score * 100)
 
         scored_product = product.copy()
         scored_product["match_score"] = min(match_score, 100)
         scored_products.append(scored_product)
+    
 
     top_products = sorted(
         scored_products,
